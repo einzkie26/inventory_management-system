@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "inventory-management-desktop"
+version = "2.0.0"
+description = "A Tkinter inventory and shopping application backed by MySQL/XAMPP"
+requires-python = ">=3.10"
+dependencies = ["mysql-connector-python>=9.2"]
+
+[project.scripts]
+inventory = "inventory.app:main"
+
+[tool.setuptools.packages.find]
+include = ["inventory*"]
+
+[tool.setuptools.package-data]
+inventory = ["schema.sql", "workforce.sql"]

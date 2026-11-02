@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.py[cod]
+.env
+backups/
+receipts/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+inventory.log
