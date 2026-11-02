@@ -60,55 +60,6 @@ Each delivery creates an order with the selected product names, categories, unit
 
 Product and delivery rows are locked in a consistent order. Assignment, pickup, cancellation, stock changes, and audit records commit together. Exporting a receipt or manifest is a separate operation, so a file-write failure cannot undo a saved delivery. Archived products retain their order and delivery history.
 
-## Database and configuration
-
-Startup creates missing tables and applies versioned upgrades. Schema version 2 adds the four employee roles, account status, stock count records, deliveries, delivery events, and order status. Before upgrading an existing database, the app saves a SQL backup in `backups/`.
-
-Existing account IDs, passwords, balances, products, and purchase history are preserved. Legacy `customer` accounts become **Inventory worker** accounts; an admin can then choose the appropriate role. Legacy balance records remain in the database for historical preservation. Old `order_details.price` values remain line totals. The original admin credentials are preserved through the workforce upgrade.
-
-Copy `.env.example` to `.env` for a new checkout and adjust settings as needed. Environment variables override `.env`.
-
-| Setting | Default |
-| --- | --- |
-| `DB_HOST` / `DB_PORT` | `127.0.0.1` / `3306` |
-| `DB_USER` / `DB_PASSWORD` | `root` / empty |
-| `DB_NAME` | `inventory_management` |
-| `DB_TIME_ZONE` | `+08:00`, matching Asia/Shanghai for new timestamps |
-| `RECEIPT_DIR` | `receipts`, also used for delivery manifests |
-| `BACKUP_DIR` | `backups` |
-| `INVENTORY_SOUND` | `0`; set to `1` for optional Windows sound effects |
-
-Relative paths resolve from the project folder. Connection retry reloads `.env`. Errors are recorded in `inventory.log`. Qt, Pillow, pygame, and pynput are not runtime requirements.
-
-```powershell
-# Check connectivity
-.\.venv\Scripts\python.exe -m inventory --check-db
-
-# Initialize or upgrade without opening the GUI
-.\.venv\Scripts\python.exe -m inventory --init-db
-
-# Save a SQL backup
-.\.venv\Scripts\python.exe -m inventory --backup
-```
-
-Restore SQL backups into an empty database using a MySQL client, then set `DB_NAME` to that database. Backups contain account records. MySQL DDL is not transactional; migration steps are repeatable after a reported data issue is corrected.
-
-Original Python files are preserved in `backups/source_<timestamp>/`, and the application before the workforce change is preserved in `backups/before_workforce_<timestamp>/`. Original assets and the sample receipt were retained.
-
-## Code structure
-
-| Location | Responsibility |
-| --- | --- |
-| `inventory/app.py`, `ui/` | Single-window application, background jobs, and role-specific panels |
-| `inventory/roles.py`, `access.py` | Role definitions and database-backed permission checks |
-| `inventory/bootstrap.py` | Automatic, repeatable default admin creation |
-| `inventory/services.py`, `catalog.py` | Authentication, products, and reservation queries |
-| `inventory/employees.py` | Employee account and role management |
-| `inventory/stock.py` | Count flags and admin corrections |
-| `inventory/deliveries.py`, `sales.py` | Delivery transactions, manifests, and order reporting |
-| `inventory/db.py`, `migrations.py`, `*.sql` | Connections, transactions, and schema versions |
-| `inventory/backup.py`, `receipts.py` | SQL backups, receipts, and manifest export |
-
 ## Verification
 
 Unit tests run without a database; integration tests are opt-in:
